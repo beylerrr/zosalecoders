@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig  {
+public class SecurityConfig {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
     @Autowired
@@ -27,12 +28,12 @@ public class SecurityConfig  {
 
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(){
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
@@ -40,6 +41,7 @@ public class SecurityConfig  {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
@@ -49,7 +51,7 @@ public class SecurityConfig  {
                 .exceptionHandling().authenticationEntryPoint(handler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET,"/user/getall").permitAll()
+                .antMatchers(HttpMethod.GET,permitSwagger).permitAll()
                 .antMatchers("/auth/**")
                 .permitAll()
                 .anyRequest().authenticated();
@@ -57,4 +59,14 @@ public class SecurityConfig  {
         httpSecurity.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
+
+    public static String[] permitSwagger = {
+            "/v2/api-docs/**",
+            "/v2/api-docs.yaml",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**"
+    };
+
 }
